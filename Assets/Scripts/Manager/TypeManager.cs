@@ -22,23 +22,16 @@ public class TypeManager : NetworkBehaviour
 
     void Start()
     {
-        inputField = GameObject.Find("InputField (TMP)").GetComponent<TMP_InputField>();
-
-        if (inputField == null)
-        {
-            Debug.LogError("InputField not found!");
-        }
-
+        inputField.ActivateInputField();
         DisplayParagraph();
     }
 
     private void Update()
     {
-        if (isLocalPlayer)
-        {
+       
             CheckInput();
             ResetInput();
-        }
+        
     }
 
     void DisplayParagraph()
@@ -83,6 +76,7 @@ public class TypeManager : NetworkBehaviour
             {
                 IncrementScoreAndIndex();
                 DisplayParagraphOrPerformExtraActions();
+                GameManager.Instance.castleController.SpawnBullets();
             }
             else if (inputText.Length >= currentWord.Length && inputText.StartsWith(currentWord))
             {
