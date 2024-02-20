@@ -6,21 +6,32 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-
 public class TypeManager : NetworkBehaviour
 {
     [SerializeField] private TMP_InputField inputField;
-
-
-    [SerializeField] private TextMeshProUGUI _wordDisplay;
+    public TextMeshProUGUI _wordDisplay;
     [SerializeField] private TextMeshProUGUI scoreText;
 
+    private string[] words =
+    {
+       "programming", "mirror",
+        "sun", "moon", "star", "planet", "keyboard", "mouse", "guitar", "piano", "ocean", "mountain", "forest", "cloud",
+        "rain", "snow", "fire", "water", "earth", "wind", "light", "dark", "happy", "sad", "angry", "love", "hate",
+        "peace", "war", "friend", "enemy", "family", "stranger", "history", "future", "science", "art", "music",
+        "dance", "dream", "reality", "space", "time", "hope",
+        "flower", "breeze", "smile", "laughter", "journey", "whisper", "courage", "wisdom", "serenity", "joy",
+        "freedom", "imagination", "creation", "adventure", "inspiration", "harmony", "tranquility", "passion", "purpose",
+        "forgiveness", "gratitude", "compassion", "kindness", "innovation", "wonder", "infinity", "reflection", "victory",
+        "mystery", "celebration", "magic", "balance", "noble", "eternity", "discovery", "effort", "thrive", "grace",
+        "radiant", "effervescent", "illuminate", "whimsical", "ethereal", "ripple", "chime", "savor", "delight", "luminous"
+    };
 
-    private string[] words = { "hello", "world", "unity", "game", "speed", "test" };
+   private int startIndex = 0;
+    private int endIndex = 0;
     private int currentIndex = 0;
     private int score = 0;
 
-    void Start()
+    public override void OnStartClient()
     {
         inputField.ActivateInputField();
         DisplayParagraph();
@@ -28,10 +39,8 @@ public class TypeManager : NetworkBehaviour
 
     private void Update()
     {
-       
-            CheckInput();
-            ResetInput();
-        
+        CheckInput();
+        ResetInput();
     }
 
     void DisplayParagraph()
@@ -45,7 +54,7 @@ public class TypeManager : NetworkBehaviour
     {
         string coloredText = "";
 
-        for (int i = 0; i < words.Length; i++)
+        for (int i = startIndex; i <= endIndex && i < words.Length; i++)
         {
             coloredText += GetWordColor(i);
         }
@@ -56,15 +65,16 @@ public class TypeManager : NetworkBehaviour
     private string GetWordColor(int index)
     {
         string word = words[index];
-        string colorTag = (index < currentIndex) ? "<color=green>" : (index == currentIndex) ? "<color=blue>" : "";
+        string colorTag = (index < currentIndex) ? "<color=green>" : (index == currentIndex) ? "<color=white>" : "";
         return colorTag + word + "</color> ";
     }
 
-    private void SetWordDisplay(string coloredText)
+    private void SetWordDisplay(string coloredText) 
     {
         _wordDisplay.text = coloredText;
     }
 
+    [Client]
     private void CheckInput()
     {
         if (currentIndex < words.Length)
@@ -76,9 +86,9 @@ public class TypeManager : NetworkBehaviour
             {
                 IncrementScoreAndIndex();
                 DisplayParagraphOrPerformExtraActions();
-                GameManager.Instance.castleController.SpawnBullets();
+                GameManager.Instance.playerController.Shoot();
             }
-            else if (inputText.Length >= currentWord.Length && inputText.StartsWith(currentWord))
+            else if (inputText.StartsWith(currentWord))
             {
                 IncrementIndex();
                 DisplayParagraph();
@@ -91,6 +101,12 @@ public class TypeManager : NetworkBehaviour
         score++;
         scoreText.text = "Score: " + score.ToString();
         currentIndex++;
+
+        if (currentIndex > endIndex && endIndex < words.Length - 1)
+        {
+            startIndex += 1;
+            endIndex += 1;
+        }
     }
 
     private void DisplayParagraphOrPerformExtraActions()
@@ -101,8 +117,8 @@ public class TypeManager : NetworkBehaviour
         }
         else
         {
-            // Paragraf sona erdiğinde ekstra işlemler yapabilirsiniz.
-            // Örneğin, oyunu bitirme veya bir sonraki seviyeye geçme gibi.
+            // Perform extra actions when the paragraph is completed.
+            // For example, finish the game or move to the next level.
         }
     }
 
